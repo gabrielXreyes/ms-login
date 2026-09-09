@@ -1,13 +1,13 @@
 package com.ms_login.services;
 
 import com.ms_login.dto.UserCreateRequest;
-import com.ms_login.dto.UserRequest;
-import com.ms_login.entity.User;
+import org.springframework.http.ResponseEntity;
 
 
 public interface UserService {
 
-    public void getUserByEmail(UserRequest userRequest);
-    public void saveUser(UserCreateRequest userCreateRequest);
-
+    ResponseEntity<String> saveUser(UserCreateRequest userCreateRequest);
+    void validationPassword(UserCreateRequest userCreateRequest);
+    void validationEmail(UserCreateRequest userCreateRequest);
+    void validationUsername(UserCreateRequest userCreateRequest);
 }

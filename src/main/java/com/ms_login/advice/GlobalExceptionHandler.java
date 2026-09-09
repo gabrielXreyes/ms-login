@@ -2,11 +2,11 @@ package com.ms_login.advice;
 
 import com.ms_login.constant.Constants;
 import com.ms_login.errors.ApiErrors;
-import com.ms_login.exception.UserExistException;
+import com.ms_login.exception.*;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -22,7 +22,6 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,5 +95,44 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         detalles.add(Constants.userExit);
         ApiErrors errores = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(404), LocalDateTime.now());
         return ResponseEntity.status(HttpStatusCode.valueOf(409)).body(errores);
+    }
+
+    @ExceptionHandler(PasswordShortException.class)
+    public ResponseEntity<Object> PasswordSortException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.passwordSort);
+        ApiErrors errors = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(400), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(errors);
+    }
+
+    @ExceptionHandler(PasswordNotUppercase.class)
+    public ResponseEntity<Object> PasswordNotUppercaseException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.passwordDontContentUpper);
+        ApiErrors apiErrors= new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(400), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(apiErrors);
+    }
+
+    @ExceptionHandler(PasswordNotContentSpecialCharacterException.class)
+    public ResponseEntity<Object> PasswordNotContentSpecialCharacterException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.passwordDontContentSpecialCharacter);
+        ApiErrors apiErrors = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(400), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(apiErrors);
+    }
+    @ExceptionHandler(UsernameShortException.class)
+    public ResponseEntity<Object> UsernameShortException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.usernameTooShort);
+        ApiErrors apiErrors = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(400), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(400)).body(apiErrors);
+    }
+
+    @ExceptionHandler(DomainNoExistException.class)
+    public ResponseEntity<Object> DomainNoExistException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.userExit);
+        ApiErrors apiErrors = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(404), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(apiErrors);
     }
 }
