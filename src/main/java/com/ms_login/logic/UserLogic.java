@@ -1,16 +1,13 @@
 package com.ms_login.logic;
 
 import com.ms_login.dto.UserCreateRequest;
-import com.ms_login.dto.Example;
 import com.ms_login.exception.*;
 import com.ms_login.repository.UserRepository;
 import com.ms_login.services.UserService;
 import com.ms_login.entity.User;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +38,6 @@ import java.util.*;
     @Override
     public ResponseEntity<String> saveUser(UserCreateRequest userCreateRequest) throws PasswordNotUppercase, PasswordShortException, UserExistException {
         Optional<User> temp = userRepository.findByEmial(userCreateRequest.getEmail());
-        print(userCreateRequest);
         try {
             if (temp.isPresent()) {
                 throw new UserExistException(userCreateRequest.getEmail());
@@ -145,11 +141,6 @@ import java.util.*;
         if(userCreateRequest.getUserName().length() < 6){
             throw new UserExistException("Username too short");
         }
-    }
-
-    public void print(UserCreateRequest userCreateRequest){
-        Optional<Example> example = userRepository.findByEmial2(userCreateRequest.getEmail() );
-        System.out.println("--------------------"+example.get().getEmail());
     }
 
 }
