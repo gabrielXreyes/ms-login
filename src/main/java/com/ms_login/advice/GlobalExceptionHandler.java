@@ -135,4 +135,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ApiErrors apiErrors = new ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(404), LocalDateTime.now());
         return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(apiErrors);
     }
+
+    @ExceptionHandler(UserNotExistException.class)
+    public ResponseEntity<Object> UserNotExistException(@NonNull RuntimeException ex){
+        List<String> detalles = new ArrayList<>();
+        detalles.add(Constants.userNotExist);
+        ApiErrors apiErrors= new  ApiErrors(ex.getMessage(), detalles, HttpStatusCode.valueOf(404), LocalDateTime.now());
+        return ResponseEntity.status(HttpStatusCode.valueOf(404)).body(apiErrors);
+    }
 }

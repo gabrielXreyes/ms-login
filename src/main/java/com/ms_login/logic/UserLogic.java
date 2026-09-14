@@ -1,5 +1,7 @@
 package com.ms_login.logic;
 
+import com.ms_login.constant.Constants;
+import com.ms_login.dto.LoginRequest;
 import com.ms_login.dto.UserCreateRequest;
 import com.ms_login.exception.*;
 import com.ms_login.repository.UserRepository;
@@ -72,6 +74,29 @@ import java.util.*;
             ex.printStackTrace();
             return new ResponseEntity<String>(ex.getMessage(), HttpStatusCode.valueOf(500));
         }
+    }
+
+    @Override
+    public ResponseEntity<String> loginUser(LoginRequest loginRequest) {
+         Optional<User> temp = userRepository.findByEmial(loginRequest.getEmail());
+         try{
+             if(temp.isPresent()){
+                if( passwordEncoder.matches(loginRequest.getPassword(),temp.get().getPassword())){
+
+                    return new ResponseEntity<String>(" login successful", HttpStatusCode.valueOf(200));
+                }else {
+
+                    return new ResponseEntity<String >("Invalid password", HttpStatusCode.valueOf(400));
+                }
+
+             }else{
+                 throw new UserNotExistException(Constants.userNotExist);
+             }
+         }catch (UserNotExistException ex){
+             ex.printStackTrace();
+             return  new ResponseEntity<String>(Constants.userNotExist, HttpStatusCode.valueOf(400));
+         }
+
     }
 
     @Override
