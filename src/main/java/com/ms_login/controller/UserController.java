@@ -6,8 +6,10 @@ import com.ms_login.dto.UserCreateRequest;
 
 import com.ms_login.services.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +22,17 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<TokenResponse> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
         return userService.loginUser(loginRequest);
     }
 
     @PostMapping("/create")
     public ResponseEntity<TokenResponse> create(@Valid @RequestBody UserCreateRequest userCreateRequestRequest) {
         return userService.saveUser(userCreateRequestRequest);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenResponse> a(@RequestHeader(HttpHeaders.AUTHORIZATION) final String authHeader) {
+        return userService.NewRefreshToken(authHeader);
     }
 }

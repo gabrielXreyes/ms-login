@@ -9,8 +9,8 @@ import org.springframework.http.ResponseEntity;
 public interface UserService {
 
     ResponseEntity<TokenResponse> saveUser(UserCreateRequest userCreateRequest);
-    ResponseEntity<String> loginUser(LoginRequest loginRequest);
-
+    ResponseEntity<TokenResponse> loginUser(LoginRequest loginRequest);
+    ResponseEntity<TokenResponse> NewRefreshToken(String authHeader);
 
 
     //validations

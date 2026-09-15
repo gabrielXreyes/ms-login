@@ -9,10 +9,14 @@ import com.ms_login.repository.UserRepository;
 import com.ms_login.services.JwtService;
 import com.ms_login.services.UserService;
 import com.ms_login.entity.User;
+import org.antlr.v4.runtime.Token;
 import org.apache.catalina.Lifecycle;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +34,16 @@ import java.util.*;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
     //private final JavaMailSender mailSender;
 
     public UserLogic(UserRepository userRepository, JavaMailSender mailSender,
-                     PasswordEncoder passwordEncoder, JwtService jwtService) {
+                     PasswordEncoder passwordEncoder, JwtService jwtService,
+                     AuthenticationManager authenticationManager) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
         //this.mailSender = mailSender;
     }
 
@@ -92,25 +99,32 @@ import java.util.*;
     }
 
     @Override
-    public ResponseEntity<String> loginUser(LoginRequest loginRequest) {
-         Optional<User> temp = userRepository.findByEmial(loginRequest.getEmail());
-         try{
-             if(temp.isPresent()){
-                if( passwordEncoder.matches(loginRequest.getPassword(),temp.get().getPassword())){
+    public ResponseEntity<TokenResponse> loginUser(LoginRequest loginRequest) {
+        ///call to Authentication and save the ans inside verified
+         Authentication verified= authenticationManager.authenticate(
+         new UsernamePasswordAuthenticationToken(
+                 loginRequest.getEmail(),
+                 loginRequest.getPassword()
+         )
+        );
+        try {
+            if(verified.isAuthenticated()){throw new UserNotExistException(Constants.userNotExist);}
+            Optional<User> temp =userRepository.findByEmial(loginRequest.getEmail());
+            String  toker = jwtService.generateToken (temp.get());
+            String refreshToken = jwtService.generateRefreshToken(temp.get());
+            return new ResponseEntity<TokenResponse>(new  TokenResponse(toker,refreshToken), HttpStatusCode.valueOf(200));
+        }catch (UserExistException ex){
+            ex.printStackTrace();
+            return new ResponseEntity<TokenResponse>(new TokenResponse("error","error"), HttpStatusCode.valueOf(400));
+        }
+    }
 
-                    return new ResponseEntity<String>(" login successful", HttpStatusCode.valueOf(200));
-                }else {
-                    return new ResponseEntity<String >("Invalid password", HttpStatusCode.valueOf(400));
-                }
+    @Override
+    public ResponseEntity<TokenResponse> NewRefreshToken(String authHeader) {
+        if(authHeader==null || !authHeader.equalsIgnoreCase("1 ")) {
 
-             }else{
-                 throw new UserNotExistException(Constants.userNotExist);
-             }
-         }catch (UserNotExistException ex){
-             ex.printStackTrace();
-             return  new ResponseEntity<String>(Constants.userNotExist, HttpStatusCode.valueOf(400));
-         }
-
+        }
+        return null;
     }
 
     @Override
