@@ -2,11 +2,14 @@ package com.ms_login.logic;
 
 import com.ms_login.constant.Constants;
 import com.ms_login.dto.LoginRequest;
+import com.ms_login.dto.TokenResponse;
 import com.ms_login.dto.UserCreateRequest;
 import com.ms_login.exception.*;
 import com.ms_login.repository.UserRepository;
+import com.ms_login.services.JwtService;
 import com.ms_login.services.UserService;
 import com.ms_login.entity.User;
+import org.apache.catalina.Lifecycle;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,21 +28,26 @@ import java.util.*;
  class UserLogic implements UserService {
 
     private final UserRepository userRepository;
-    private final JavaMailSender mailSender;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    //private final JavaMailSender mailSender;
+
     public UserLogic(UserRepository userRepository, JavaMailSender mailSender,
-                     PasswordEncoder passwordEncoder) {
+                     PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
-        this.mailSender = mailSender;
+        this.jwtService = jwtService;
+        //this.mailSender = mailSender;
     }
 
 
 
 
     @Override
-    public ResponseEntity<String> saveUser(UserCreateRequest userCreateRequest) throws PasswordNotUppercase, PasswordShortException, UserExistException {
+    public ResponseEntity<TokenResponse> saveUser(UserCreateRequest userCreateRequest) throws PasswordNotUppercase, PasswordShortException, UserExistException {
         Optional<User> temp = userRepository.findByEmial(userCreateRequest.getEmail());
+        String token = "token";
+        String refreshToken = "token Refreshed";
         try {
             if (temp.isPresent()) {
                 throw new UserExistException(userCreateRequest.getEmail());
@@ -48,31 +56,38 @@ import java.util.*;
                 validationEmail(userCreateRequest);
                 validationUsername(userCreateRequest);
 
-                User newUser = new User(userCreateRequest.getUserName(),
-                        passwordEncoder.encode(userCreateRequest.getPassword()),
-                        userCreateRequest.getEmail(),
-                        1,
-                        LocalDate.now(),
-                        LocalDate.now());
+                User newUser = User.builder()
+                        .username(userCreateRequest.getUserName())
+                        .password(passwordEncoder.encode(userCreateRequest.getPassword()))
+                        .email(userCreateRequest.getEmail())
+                        .role(1)
+                        .build();
+
                 userRepository.save(newUser);
-                return new ResponseEntity<String>("User saved successfully", HttpStatusCode.valueOf(200));
+                 token =jwtService.generateToken(newUser);
+                 refreshToken =  jwtService.generateRefreshToken(newUser);
+                return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(200));
             }
 
         }catch (UserExistException ex){
             ex.printStackTrace();
-            return new ResponseEntity<String>("User already exist", HttpStatusCode.valueOf(400));
+            return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(400));
         } catch (PasswordShortException ex) {
             ex.printStackTrace();
-            return  new ResponseEntity<String>("Invalid password because is too short", HttpStatusCode.valueOf(400));
+            token="bad";
+            return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(400));
         }catch (PasswordNotContentSpecialCharacterException ex) {
             ex.printStackTrace();
-            return new ResponseEntity<String>("Invalid password because it doesn't contain special character", HttpStatusCode.valueOf(400));
+            token="bad";
+            return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(400));
         }catch (PasswordNotUppercase ex){
             ex.printStackTrace();
-            return new ResponseEntity<String>("Invalid password because it doesn't contain Uppercase", HttpStatusCode.valueOf(400));
+            token="bad";
+            return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(400));
         }catch (DomainNoExistException ex) {
             ex.printStackTrace();
-            return new ResponseEntity<String>(ex.getMessage(), HttpStatusCode.valueOf(500));
+            token="bad";
+            return new ResponseEntity<TokenResponse>(new TokenResponse(token,refreshToken), HttpStatusCode.valueOf(500));
         }
     }
 
@@ -85,7 +100,6 @@ import java.util.*;
 
                     return new ResponseEntity<String>(" login successful", HttpStatusCode.valueOf(200));
                 }else {
-
                     return new ResponseEntity<String >("Invalid password", HttpStatusCode.valueOf(400));
                 }
 

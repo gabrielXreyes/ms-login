@@ -1,13 +1,14 @@
 package com.ms_login.services;
 
 import com.ms_login.dto.LoginRequest;
+import com.ms_login.dto.TokenResponse;
 import com.ms_login.dto.UserCreateRequest;
 import org.springframework.http.ResponseEntity;
 
 
 public interface UserService {
 
-    ResponseEntity<String> saveUser(UserCreateRequest userCreateRequest);
+    ResponseEntity<TokenResponse> saveUser(UserCreateRequest userCreateRequest);
     ResponseEntity<String> loginUser(LoginRequest loginRequest);
 
 

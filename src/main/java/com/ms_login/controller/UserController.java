@@ -1,6 +1,7 @@
 package com.ms_login.controller;
 
 import com.ms_login.dto.LoginRequest;
+import com.ms_login.dto.TokenResponse;
 import com.ms_login.dto.UserCreateRequest;
 
 import com.ms_login.services.UserService;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<String> create(@Valid @RequestBody UserCreateRequest userCreateRequestRequest) {
+    public ResponseEntity<TokenResponse> create(@Valid @RequestBody UserCreateRequest userCreateRequestRequest) {
         return userService.saveUser(userCreateRequestRequest);
     }
 }

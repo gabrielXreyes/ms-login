@@ -1,108 +1,83 @@
 package com.ms_login.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-
+import java.util.Collection;
+import java.util.List;
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name="USERS")
-public class User {
+@AllArgsConstructor //Crea los constructors
+@NoArgsConstructor
+public class User implements UserDetails {
+    @Getter
     @Id
-    @Column(name="ID",  columnDefinition="NUMBER")
+    @Column(name="ID",  columnDefinition="NUMBER", nullable=false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private int userid;
 
-    @Column(name="USERNAME", columnDefinition = "VARCHAR2")
-    @NotNull
+    @Column(name="USERNAME", columnDefinition = "VARCHAR2", nullable=false)
     private String username;
 
-    @Column(name="PASSWORD", columnDefinition = "VARCHAR2")
-    @NotNull
+    @Setter
+    @Column(name="PASSWORD", columnDefinition = "VARCHAR2", nullable=false)
     private String password;
 
-    @Column(name="EMAIL", columnDefinition = "VARCHAR2")
-    @NotNull
+    @Column(name="EMAIL", columnDefinition = "VARCHAR2", nullable=false)
     private String email;
 
-    @Column(name="ROLE", columnDefinition = "NUMBER")
-    @NotNull
+    @Column(name="ROLE", columnDefinition = "NUMBER", nullable=false)
     private int role;
 
+    @CreationTimestamp
     @Column(name="REGISTER_DATE", columnDefinition = "DATE")
-    @NotNull
     private LocalDate registerdate;
 
+    @UpdateTimestamp
     @Column(name = "UPDATE_DATE", columnDefinition = "DATE")
-    @NotNull
-    private LocalDate updatedate;
+    private LocalDate update;
 
-    public User() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
     }
 
-    public User(String username, String password, String email, int role, LocalDate registerdate, LocalDate updatedate) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.role = role;
-        this.registerdate = registerdate;
-        this.updatedate = updatedate;
+    @Override
+    public @Nullable String getPassword() {
+        return password;
     }
 
-    public int getUserid() {
-        return userid;
-    }
-
-    public void setUserid(int userid) {
-        this.userid = userid;
-    }
-
+    @Override
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
     }
 
-    public String getPassword() {
-        return password;
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public int getRole() {
-        return role;
-    }
-
-    public void setRole(int role) {
-        this.role = role;
-    }
-
-    public LocalDate getRegisterdate() {
-        return registerdate;
-    }
-
-    public void setRegisterdate(LocalDate registerdate) {
-        this.registerdate = registerdate;
-    }
-
-    public LocalDate getUpdatedate() {
-        return updatedate;
-    }
-
-    public void setUpdatedate(LocalDate updatedate) {
-        this.updatedate = updatedate;
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
     }
 }
